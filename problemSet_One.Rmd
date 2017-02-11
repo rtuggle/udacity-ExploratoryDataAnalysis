@@ -1,0 +1,59 @@
+---
+title: "ProblemSet_GapMinder"
+author: "Ryan Tuggle"
+date: "March 29, 2016"
+output: html_document
+---
+
+##Selecting Data Set
+Reviewed files on GapMinder.Org
+Focused on education category and selected spending on primary education.
+
+```{r}
+df <- read.csv("~/Repositories/data/expenditure_primary.csv")
+summary(df)
+```
+
+Enriching dataset with region information from the country code library
+
+```{r}
+library(dplyr)
+library(countrycode)
+df <- countrycode_data %>% 
+    select(country.name, continent, region) %>% 
+    mutate(country = country.name) %>% 
+    right_join(df, by = "country") %>%
+    select(-country.name)
+
+head(select(df, country, region, continent))                                                                                                                    
+```
+
+trying a different join method using regex for country
+```{r}
+for(r in c(1:length(df$country)){
+    for(s in dt$gex)
+    df$test[r] <-    
+    flag <- 0
+    while(flag == 0){
+        
+    }
+}
+```
+
+Change shape of data to plot over time.
+
+```{r}
+library(tidyr)
+prep <- gather(df, "year", "rate", X1998:X2011)
+prep$year <- as.factor(gsub("X","",prep$year))
+```
+
+Box plots by region to see variation over time
+
+```{r, echo=FALSE}
+qplot(x = region, y = rate, data = subset(prep, !is.na(prep$continent)),
+      geom = 'boxplot') +
+    facet_wrap(~continent, scales = "free_x")
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

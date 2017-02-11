@@ -1,0 +1,81 @@
+---
+title: "exerciseStorms"
+author: "Ryan Tuggle"
+date: "July 16, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load data about deaths from storms from gapminder.
+```{r data}
+
+setwd("/Users/ryantuggle/Repositories/udacity")
+require(tidyr)
+require(dplyr)
+require(ggplot2)
+population <- read.csv("data/indicator_population.csv") %>%
+    gather("year", "population", 2:92) %>%
+    rename(country = Total.population) %>%
+    mutate(yearInt = as.numeric(substring(year,2,5)),
+           population = as.numeric(population)) %>%
+    filter(yearInt >= 1970)
+
+density <- read.csv("data/indicator_population density.csv") %>%
+    gather("year", "popDensity", 2:62) %>%
+    rename(country = Population.density..per.square.km.)
+
+deaths <- read.csv("data/indicator_storm killed.csv") %>% 
+    gather("year", "deaths", 2:41) %>%
+    rename(country = Storm.killed) %>%
+    inner_join(population, by = c("country","year")) %>%
+    left_join(density, by = c("country","year")) %>%
+    mutate(index.death = deaths / (population / 10000),
+           decade = as.factor(paste(substring(year, 2, 4), "0s", sep = "")))
+    
+```
+
+
+Use scatter plots to see relationship between storm deaths and population density.
+
+```{r scatter}
+
+ggplot(deaths %>%
+           group_by(year) %>%
+           summarise(sumPop = sum(population, na.rm = TRUE),
+                     sumDeaths = sum(deaths, na.rm = TRUE)) %>%
+           mutate(index = sumDeaths / (sumPop / 100000)),
+       aes(x = year, y = index)) +
+    geom_bar(stat = "Identity")
+
+ggplot(filter(deaths, index.death != 0 & popDensity <= 2000),
+       aes(x = popDensity, y=index.death)) +
+    geom_jitter(alpha = 0.50,
+                color = "orange") +
+    scale_x_continuous(limits = c(0,500)) +
+    geom_smooth(method = lm) +
+    facet_wrap(~decade)
+
+
+```
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

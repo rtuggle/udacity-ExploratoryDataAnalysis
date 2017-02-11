@@ -1,0 +1,96 @@
+---
+title: "problemset4"
+author: "Ryan Tuggle"
+date: "May 15, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem One: price vs. x
+
+Plot price vs x in diamonds dataset.
+
+
+```{r plot, echo = FALSE}
+require(ggplot2)
+
+ggplot(data = diamonds,
+       aes(x = x, y = price)) +
+    geom_point()
+```
+
+## Problem Two: Correlations
+
+Find the correlation between price and x.
+
+```{r correlation}
+with(diamonds, cor.test(x = diamonds$x, y = diamonds$price))
+cor.test(diamonds$y, y = diamonds$price)
+cor.test(diamonds$z, diamonds$price)
+```
+
+##Problem Three: price vs. depth
+
+Plot price vs. depth
+make transparency 1/100 
+explore x axis in units of two
+
+```{r plot, echo = FALSE}
+
+ggplot(data = diamonds,
+       aes(x = depth, y = price)) + 
+    geom_point(alpha = 1/100) +
+    scale_x_continuous(limits = c(50,70), breaks = seq(50,70,2))
+```
+
+calculate the correlation
+
+```{r correlation}
+cor.test(diamonds$price, diamonds$depth)
+```
+
+##Problem Four: price vs. carat
+
+plot price vs. carat
+omit the top 1% of both
+
+```{r plot}
+require(dplyr)
+ggplot(data = filter(diamonds, price <= quantile(price, probs = 0.99) & 
+                         carat <= quantile(carat, probs = 0.99)),
+       aes(x = carat, y = price)) +
+    geom_point()
+
+```
+
+
+##Problem Five: Volume
+
+add volume variable (x * y * z)
+plot price and volume
+calculate correlation excluding outliers at 0 and above 800
+
+```{r volume}
+diamonds$volume <- diamonds$x * diamonds$y * diamonds$z
+
+ggplot(data = diamonds,
+       aes(x = volume, y = price)) +
+    geom_point()
+
+with(filter(diamonds, volume < 800 & volume != 0), 
+     cor.test(diamonds$volume, diamonds$price))
+
+diamonds.sub <- filter(diamonds, volume < 800 & volume != 0)
+cor.test(diamonds.sub$volume, diamonds.sub$price)
+
+ggplot(data = subset(diamonds, volume < 800 & volume != 0),
+       aes(x = volume, y = price)) +
+    geom_point(alpha = 1/20) + 
+    geom_smooth()
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
